@@ -38,6 +38,7 @@ Build the [docker-llvm](https://github.com/ChrisTimperley/docker-llvm) image ima
     * `git clone https://github.com/mapbox/variant/ && cd variant && git checkout a5a79a594f39d705a7ef969f54a0743516f0bc6d && cd ../../`
 * Build the image
     * `cd docker && sudo make install`
+
 After following these steps you will have a docker volume called rosdiscover-cxx-extract-opt ready to be mounted and used by rosdiscover. You can check if it was properly installed by running sudo docker volume ls.
 
 #### Install the rosdiscover python package
@@ -65,10 +66,12 @@ $ python3 extractor.py [-h] <-v ROS_VERSION> [-s START_TIME] [-e END_TIME] <-f F
     parser.add_argument('-rdc', '--ros-discover-config', help='Path to the rosdiscover config', required=False, type=str)
     parser.add_argument('-rds', '--node-input-strategy', help='either node-provider or graph-merge', required=False, type=str)
 
-If you would like to use rosbag extractor with rosdiscover support please you can use the following flags 
+If you would like to use rosbag extractor with rosdiscover support please use the following flags:
 * `-rd / --use-ros-discover` - Enable the usage of rosdiscover for node input
+* `-rdc / --ros-discover-config` - Path to the configuration for rosdiscover. Check out [this example](https://github.com/cristidragomir97/rosbag-extractor/blob/main/rosdiscover_configs/turtlebot3-slam.yml)
+* `-rds / --ros-discover-strategy` - The strategy used for integrationg the rosdiscover output. `graph-merge` creates an architecture graph using rosart and another one using rosdiscover and merges them, while `node-provider` uses the input from rosdiscover as an input for rosbag-extractor. 
 
-##### Example
+## Example
 
 Here, we provide an example with a very simple ROS 2 bag file:
 ```
