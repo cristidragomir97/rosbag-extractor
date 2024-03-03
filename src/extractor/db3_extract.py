@@ -5,7 +5,7 @@ import os
 from src.extractor import functions
 
 
-def main(bagfolder, start_t, end_t, input_file, graph_n):
+def main(bagfolder, start_t, end_t, input_file, graph_n, rosdiscover = False):
     graph = Digraph(name=bagfolder+graph_n)
     graph.graph_attr["rankdir"] = "LR"
 
@@ -47,10 +47,13 @@ def main(bagfolder, start_t, end_t, input_file, graph_n):
         functions.create_graph(bagfolder, graph, topics, nodes, graph_n, metric)
 
         # save graph
-        functions.save_graph(bagfolder, graph, graph_n, "ros2")
+        graph_path = functions.save_graph(bagfolder, graph, graph_n, "ros2")
 
         # view graph
-        graph.unflatten(stagger=5, fanout=True).view()
+        if not rosdiscover:
+            graph.unflatten(stagger=5, fanout=True).view()
+
+        return graph_path
 
 # if __name__ == '__main__':
 #     main(bagfolder, file, start, end, input)

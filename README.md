@@ -23,7 +23,30 @@ The following figure illustrates the 3-phases approach to extract computation gr
 ```
 
 ## Installation
-Note that it is not necessary for our architecture extractor, which is independent of platforms. However, it requires a few dependencies, solved by the following commands:
+### Installing ROSDiscover
+Installing rosdiscover has some prerequisites needed for the static code analysis we need to install these first.
+
+#### Build docker-llvm
+Build the [docker-llvm](https://github.com/ChrisTimperley/docker-llvm) image image. This will build the llvm compiler used to build rosdicover-extract-cxx. This might take a while.
+
+####  Build rosdiscover-extract-cxx
+* Clone [the repo](https://github.com/cmu-rss-lab/rosdiscover-cxx-recover)
+* Add submodules with their correct versions
+    * `cd extern`
+    * `git clone https://github.com/fmtlib/fmt && cd fmt && git checkout d141cdbeb0fb422a3fb7173b285fd38e0d1772dc && cd ..`
+    * `git clone https://github.com/nlohmann/json nlohmann_json && cd nlohmann_json && git checkout db78ac1d7716f56fc9f1b030b715f872f93964e4 && cd ..`
+    * `git clone https://github.com/mapbox/variant/ && cd variant && git checkout a5a79a594f39d705a7ef969f54a0743516f0bc6d && cd ../../`
+* Build the image
+    * `cd docker && sudo make install`
+After following these steps you will have a docker volume called rosdiscover-cxx-extract-opt ready to be mounted and used by rosdiscover. You can check if it was properly installed by running sudo docker volume ls.
+
+#### Install the rosdiscover python package
+* `pip3 install roswire`
+* `git clone https://github.com/cmu-rss-lab/rosdiscover rosdiscover`
+* `cd rosdiscover`
+* `pip install -e .`
+
+#### Install the rosbag-extractor dependencies:
 
 ```
 $ pip3 install -r ./requirements.txt
@@ -31,10 +54,19 @@ $ sudo apt install graphviz
 ```
 * If the requirements list is/becomes broken, do not hesitate to pull request the necessary updates.
 
-Then, just run the extraction script on a bag file: 
+
+Now you are finally ready to use  the extraction script on a bag file: 
+
 ```
 $ python3 extractor.py [-h] <-v ROS_VERSION> [-s START_TIME] [-e END_TIME] <-f FILE_PATH> <-ft FILE_TYPE> [-i INPUT] [-ts TIME_SPACE]
 ```
+
+ parser.add_argument('-rd', '--use-ros-discover', help='Option to run rosdiscover', required=False, type=bool)
+    parser.add_argument('-rdc', '--ros-discover-config', help='Path to the rosdiscover config', required=False, type=str)
+    parser.add_argument('-rds', '--node-input-strategy', help='either node-provider or graph-merge', required=False, type=str)
+
+If you would like to use rosbag extractor with rosdiscover support please you can use the following flags 
+* `-rd / --use-ros-discover` - Enable the usage of rosdiscover for node input
 
 ##### Example
 
@@ -87,3 +119,4 @@ The corresponding metric as follows can be found in the ``metrics`` directory.
 ```
 
 
+    

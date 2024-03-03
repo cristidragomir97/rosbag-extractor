@@ -59,8 +59,12 @@ def _median(values):
 def get_freq(stamps):
     period = [s1 - s0 for s1, s0 in zip(stamps[1:], stamps[:-1])]
     med_period = _median(period)
-    med_freq = round((1.0 / med_period), 2)
-    return med_freq
+
+    if  med_period == 0.0:
+        return 0.0
+    else:
+        med_freq = round((1.0 / med_period), 2)
+        return med_freq
 
 
 def get_mean_freq(stamps):
@@ -97,14 +101,19 @@ def generate_topics(bagfolder, graph, topics, graph_n, metric):
             stamps = tmp['Stamps'].tolist()
             period = [s1 - s0 for s1, s0 in zip(stamps[1:], stamps[:-1])]
             med_period = _median(period)
-            med_freq = round((1.0 / med_period), 2)
+            if med_period == 0.0:
+                med_freq = 0.0
+            else:
+                med_freq = round((1.0 / med_period), 2)
+
+            
             if str(med_freq) != 'nan':
                 graph.node(topic, topic, {'shape': 'rectangle'}, xlabel=(str(med_freq)+'Hz'))
             else:
                 graph.node(topic, topic, {'shape': 'rectangle'})
 
             data = {topic: {'name': topic,
-                            'start': stamps[1],
+                            'start': stamps[0],
                             'end': stamps[-1],
                             'frequency': med_freq
                             }}
@@ -231,3 +240,6 @@ def save_graph(bagfolder, graph, graph_n, ros_v):
         dot_file = "graphs/ros2/" + bagname + '/' + bagname + '_' + graph_n + '.dot'
         with open(dot_file, 'w') as dot_file:
             dot_file.write(graph.source)
+
+    path = "graphs/" + ros_v + "/" + bagname + '/' + bagname + '_' + graph_n + '.dot'   
+    return path 

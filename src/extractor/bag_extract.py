@@ -22,13 +22,16 @@ def generate_topics(bag, graph, all_topics, metric):
             stamps = tmp['Stamps'].tolist()
             period = [s1 - s0 for s1, s0 in zip(stamps[1:], stamps[:-1])]
             med_period = functions._median(period)
-            med_freq = round((1.0 / med_period), 2)
+            if med_period == 0.0:
+                med_freq = 0.0
+            else:
+                med_freq = round((1.0 / med_period), 2)
             if str(med_freq) != 'nan':
                 graph.node(topic, topic, {'shape': 'rectangle'}, xlabel=(str(med_freq) + 'Hz'))
             else:
                 graph.node(topic, topic, {'shape': 'rectangle'})
             data = {topic: {'name': topic,
-                            'start': stamps[1],
+                            'start': stamps[0],
                             'end': stamps[-1],
                             'frequency': med_freq
                             }}
@@ -45,13 +48,16 @@ def generate_topics(bag, graph, all_topics, metric):
                         stamps = tmp['Stamps'].tolist()
                         period = [s1 - s0 for s1, s0 in zip(stamps[1:], stamps[:-1])]
                         med_period = functions._median(period)
-                        med_freq = round((1.0 / med_period), 2)
+                        if med_period == 0.0:
+                            med_freq = 0.0
+                        else:
+                            med_freq = round((1.0 / med_period), 2)
                         if str(med_freq) != 'nan':
                             sub_topic.node(topic, topic, {'shape': 'rectangle'}, xlabel=(str(med_freq) + 'Hz'))
                         else:
                             sub_topic.node(topic, topic, {'shape': 'rectangle'})
                         data = {topic: {'name': topic,
-                                        'start': stamps[1],
+                                        'start': stamps[0],
                                         'end': stamps[-1],
                                         'frequency': med_freq
                                         }}
@@ -94,7 +100,7 @@ def generate_edges(graph, rosout_info, topics, nodes, metric):
             metric['Nodes'][subscriber]['#publisher'] += 1
 
 
-def extract_graph(bag, topics, external_nodes, rosout_info, metric, graph_n):
+def extract_graph(bag, topics, external_nodes, rosout_info, metric, graph_n, rosdiscover = False):
     graph = Digraph(name=bag+graph_n)
 
     # initialize the metric
@@ -141,15 +147,20 @@ def extract_graph(bag, topics, external_nodes, rosout_info, metric, graph_n):
     functions.generate_edges_external(bag, external_nodes, graph, metric)
 
     # save graph
-    functions.save_graph(bag, graph, graph_n, "ros1")
+    graph_path = functions.save_graph(bag, graph, graph_n, "ros1", )
 
     # save metric
     functions.save_metric(metric, bag, graph_n)
 
     # view graph
-    graph.unflatten(stagger=3, fanout=True).view()
+    if not rosdiscover:
+        graph.unflatten(stagger=3, fanout=True).view()
 
-def main(bagfolder, start_t, end_t, input_file, graph_n):
+    return graph_path
+
+    
+
+def main(bagfolder, start_t, end_t, input_file, graph_n, rosdiscover = False):
     bagfile = get_file_name(bagfolder)
     bag = bagfile.replace('.bag', '')
 
@@ -205,7 +216,7 @@ def main(bagfolder, start_t, end_t, input_file, graph_n):
     metric['Start'] = start_t
     metric['End'] = end_t
 
-    extract_graph(bag, topics, nodes, rosout_info, metric, graph_n)
+    graph_path = extract_graph(bag, topics, nodes, rosout_info, metric, graph_n)
 
     # save metric
     directory = 'metrics/'
@@ -213,6 +224,8 @@ def main(bagfolder, start_t, end_t, input_file, graph_n):
     os.makedirs(directory, exist_ok=True)
     with open(metric_path, 'w') as json_file:
         json.dump(metric, json_file, indent=4)
+
+    return graph_path
 
 # if __name__ == "__main__":
 #     main()
