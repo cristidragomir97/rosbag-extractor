@@ -132,9 +132,15 @@ def run():
                     print("Node strategy is not node-provider or graph-merge")
             else:
                 print("Please provide a strategy for the node input, can be either node-provider or graph-merge")
-        else: 
-            print("Please provide a config file for ROSDiscover")
-            sys.exit()
+    else:
+        run_extractor(options.ros_version,
+                        options.start_time,
+                        options.end_time,
+                        options.file_path,
+                        options.file_type,
+                        options.input,
+                        options.time_space, 
+                        rosdiscover = False)
     
 
 
